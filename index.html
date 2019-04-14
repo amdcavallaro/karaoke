@@ -1,0 +1,378 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Google Assistant: Build your own karaoke</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="karaoke"
+                  title="Google Assistant: Build your own karaoke"
+                  environment="web"
+                  feedback-link="https://github.com/amdcaruso/karaoke">
+    
+      <google-codelab-step label="Introduction" duration="0">
+        <p>Technology is the greatest equalizer of this century. You can build natural and rich conversational experiences, you can build a computer program that uses machine learning techniques to perform human-like conversations.</p>
+<p>There are many use cases we can take advantage of the use of voice. In this codelab we will use Google Cloud Platform, the YouTube API and Actions on Google to create a karaoke action.</p>
+<aside class="special"><p>Looking for more? Check out the the official <a href="https://developers.google.com/actions/extending-the-assistant" target="_blank">Actions on Google</a> and <a href="https://dialogflow.com/docs" target="_blank">Dialogflow</a> documentation.</p>
+</aside>
+<h2 is-upgraded><strong>What you will build</strong></h2>
+<table>
+<tr><td colspan="1" rowspan="1"><p>In this codelab, you&#39;re going to build a Karaoke Action. </p>
+<p>Your app will use:</p>
+<ul>
+<li>YouTube Data API</li>
+<li>Dialogflow</li>
+<li>Actions on Google</li>
+<li>Firebase Cloud Functions</li>
+<li><a href="https://github.com/fivethirtyeight/data/blob/master/classic-rock/classic-rock-song-list.csv" target="_blank">This</a> data set.</li>
+<li>nodeJS</li>
+</ul>
+</td><td colspan="1" rowspan="1"><p class="image-container"><img style="width: 187.50px" src="img/3d454d323c89775.png"></p>
+</td></tr>
+</table>
+<h2 class="checklist" is-upgraded><strong>What you&#39;ll learn</strong></h2>
+<ul class="checklist">
+<li>Build an Assistant action that consists of an Actions project, a Dialogflow agent with custom intents and entities, a webhook, and a Cloud Function.</li>
+<li>How to implement Action fulfillment using the Action on Google client library and the Dialogflow inline editor</li>
+</ul>
+<h2 is-upgraded><strong>What you&#39;ll need</strong></h2>
+<ul>
+<li>A recent version of a browser of your choice, such as <a href="https://www.google.com/chrome/" target="_blank">Chrome</a>.</li>
+<li>To be logged in your google account.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Getting set up" duration="0">
+        <h2 is-upgraded><strong>Create a Dialogflow project</strong></h2>
+<p><br>Actions is how we name the apps for the assistant, we&#39;ll get started by creating a Dialogflow project</p>
+<ol type="1" start="1">
+<li>Open the <a href="http://console.dialogflow.com" target="_blank">Dialogflow Console</a>.</li>
+<li>Sign in with your Google account, if you haven&#39;t already</li>
+<li>When you land on the Dialogflow page, check the box next to <strong>Yes, I have read and accept the agreement</strong> and click <strong>Accept</strong>. <strong>(if it&#39;s the first time you&#39;re using Dialogflow)</strong></li>
+<li>You should see the tool that resembles the image below, Dialogflow agent creation page. Name it  <strong>karaoke</strong> and click <strong>CREATE</strong>: <img style="width: 624.00px" src="img/8dfd4dfc71ad9fb6.png"></li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Dialogflow: Build the conversation" duration="0">
+        <h2 is-upgraded><strong>Intent: Default Welcome Intent</strong></h2>
+<p>The welcome intent is the first message your users will get from your agent, usually a greeting. The welcome intent is also responsible for informing your users about their options and what they could do with your agent.</p>
+<ol type="1" start="1">
+<li>Click on intents</li>
+<li>Click on &#34;Default Welcome Intent&#34;<img style="width: 624.00px" src="img/9df5b8bbc2aa30e3.png"></li>
+<li>Scroll down to the <strong>Responses </strong>section</li>
+<li>Click the <strong>bin icon</strong> to delete the default text responses<img alt="584f65bfc02cac9.png" style="width: 624.00px" src="img/584f65bfc02cac9.png"></li>
+<li>Click on <strong>ADD RESPONSES</strong> &gt; <strong>Text response</strong>, </li>
+<li>Type in the following: <em>It&#39;s Karaoke time! What artist and song title are you searching for?</em></li>
+<li>Now scroll all the way up and click <strong>Save</strong> in the top-right corner. </li>
+</ol>
+<p>You&#39;ve just created the welcoming response to the first interaction of the users with your karaoke app.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Songs entity" duration="0">
+        <p>Entities are powerful tools used for keyword extraction. Let&#39;s create the songs entity. </p>
+<ol type="1" start="1">
+<li>On the left menu click <em>Entity</em>.</li>
+<li>Click the blue button that says <em>Create entity.</em></li>
+<li>Name it <em>song</em>.</li>
+<li>Click the more (3 dots) button on the top right <img style="width: 624.00px" src="img/9134a03fd34cae5d.png"></li>
+<li>Click <em>Switch to raw mode</em></li>
+<li>Paste the data below within the CSV tab</li>
+</ol>
+<pre>&#34;Hotel California&#34;,&#34;Hotel California&#34;
+&#34;Shooting Star&#34;,&#34;Shooting Star&#34;
+&#34;When I See You Smile&#34;,&#34;When I See You Smile&#34;
+&#34;No Matter What&#34;,&#34;No Matter What&#34;
+&#34;Walks Like A Woman&#34;,&#34;Walks Like A Woman&#34;
+&#34;No Sleep Till Brooklyn&#34;,&#34;No Sleep Till Brooklyn&#34;
+&#34;Loser&#34;,&#34;Loser&#34;
+&#34;In a Big Country&#34;,&#34;In a Big Country&#34;
+&#34;Rock Around the Clock&#34;,&#34;Rock Around the Clock&#34;
+&#34;AIN&#39;T NO SUNSHINE&#34;,&#34;AIN&#39;T NO SUNSHINE&#34;
+&#34;Cradle of Love&#34;,&#34;Cradle of Love&#34;
+&#34;Dancing With Myself&#34;,&#34;Dancing With Myself&#34;
+&#34;Eyes Without a Face&#34;,&#34;Eyes Without a Face&#34;
+&#34;My Life&#34;,&#34;My Life&#34;
+&#34;SHE&#39;S ALWAYS A WOMAN&#34;,&#34;SHE&#39;S ALWAYS A WOMAN&#34;
+</pre>
+<ol type="1" start="7">
+<li>Click save.</li>
+<li>🌟 You&#39;ve created the <em>song</em> entity</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Artists entity" duration="0">
+        <ol type="1" start="1">
+<li>On the left menu click Entity.</li>
+<li>Click the blue button that says Create entity.</li>
+<li>Name it <em>artist</em>.</li>
+<li>Click the more (3 dots) button on the top right</li>
+<li>Click Switch to raw mode</li>
+<li>Paste the data below within the CSV tab</li>
+</ol>
+<pre>&#34;@sys.music-artist&#34;,&#34;@sys.music-artist&#34;
+&#34;Eagles&#34;,&#34;Eagles&#34;
+&#34;Supertramp&#34;,&#34;Supertramp&#34;
+&#34;Survivor&#34;,&#34;Survivor&#34;
+&#34;The Beach Boys&#34;,&#34;The Beach Boys&#34;
+&#34;The Beatles&#34;,&#34;The Beatles&#34;
+&#34;The Clash&#34;,&#34;The Clash&#34;
+&#34;The Doors&#34;,&#34;The Doors&#34;
+&#34;The Goo Goo Dolls&#34;,&#34;The Goo Goo Dolls&#34;
+&#34;The Offspring&#34;,&#34;The Offspring&#34;
+&#34;The Police&#34;,&#34;The Police&#34;
+&#34;The Pretenders&#34;,&#34;The Pretenders&#34;
+&#34;The Ramones&#34;,&#34;The Ramones&#34;
+&#34;The White Stripes&#34;,&#34;The White Stripes&#34;
+&#34;The Who&#34;,&#34;The Who&#34;
+&#34;Twisted Sister&#34;,&#34;Twisted Sister&#34;
+&#34;U2&#34;,&#34;U2&#34;
+&#34;Van Halen&#34;,&#34;Van Halen&#34;
+&#34;Whitesnake&#34;,&#34;Whitesnake&#34;
+&#34;ZZ Top&#34;,&#34;ZZ Top&#34;</pre>
+<ol type="1" start="7">
+<li>Click save.</li>
+<li>🌟 You&#39;ve created the <em>artist</em> entity</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Intent: search" duration="0">
+        <p>Let&#39;s create the intent that  parses user input for fields that are required by the Youtube Data API.</p>
+<ol type="1" start="1">
+<li>From the left-hand menu, click on the <strong>+</strong> icon by the <strong>Intents</strong> menu item. For the <strong>Intent name</strong> field, enter search.</li>
+<li>In the <strong>Training phrases</strong> field click <strong>Add Training Phrases</strong>.</li>
+<li> In the Add user expression field enter <strong>Backstreet boys - I want it that way </strong>and hit <strong>Enter</strong>.</li>
+<li>Select <strong><em>Backstreet boys</em></strong> and assign it the <strong><em>@sys.artist </em></strong>entity.</li>
+<li>Select <strong><em>I want it that way </em></strong>and assign it the <strong><em>@sys.song </em></strong>entity</li>
+<li>Add more training phrases and assign the correct entities to the words.<img style="width: 493.00px" src="img/75f5448926077e54.png"></li>
+<li>Now that your training phrases have been added, scroll down and expand the <strong>Actions and parameters</strong> section.</li>
+<li>Now check the <strong>REQUIRED</strong> checkbox for the <strong>artist</strong> parameter. This tells Dialogflow to not trigger the intent until the parameter is properly provided by the user.</li>
+<li>Now click on <strong>Define prompts</strong> for the number parameter (right-hand side) and provide a re-prompt phrase. Enter in Who sings it? in the prompt field and then click <strong>Close</strong>. <img style="width: 575.00px" src="img/ce8e55f3a1a19125.png"></li>
+<li>Now scroll to the top of the page and click <strong>Save</strong>.</li>
+<li>Now scroll down to the <strong>Fullfilment</strong> section. </li>
+<li>Click the dropdown arrow and click <strong>Enable fulfillment</strong>. </li>
+<li>Then click the <strong>Enable webhook call for this intent</strong> slider:<img alt="ba365cb2730dd15b.png" style="width: 624.00px" src="img/ba365cb2730dd15b.png"></li>
+<li>This tells Dialogflow to call your fulfillment to generate a response to the user instead of using Dialogflow&#39;s response feature.</li>
+<li>In the <strong>Responses</strong> section right above fulfillment, click <strong>ADD RESPONSE</strong>. Then click on the Google Assistant tab.</li>
+<li>Move the toggle for <strong>Set this intent as end of conversation</strong>. This tells Dialogflow to relinquish control back to the Google Assistant after your fulfillment returns a response to the user. <img alt="c5489f7bad23933e.png" style="width: 624.00px" src="img/c5489f7bad23933e.png"></li>
+<li>Then scroll to the top of the intent and click <strong>SAVE</strong> once more to save the entire intent.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Youtube Data API" duration="0">
+        <p>We will use the <a href="https://developers.google.com/youtube/v3/docs/search" target="_blank">Youtube Data API v3</a> for searching videos. You can find the methods supported in this link to better understand the queries used in our code.</p>
+<h2 is-upgraded><strong>Enable the API</strong></h2>
+<ol type="1" start="1">
+<li><strong>Open the </strong><a href="https://console.cloud.google.com" target="_blank"><strong>GCP Console</strong></a></li>
+<li>Open the Navigation menu and select <strong>APIs &amp; Services</strong> &gt; <strong>Library</strong>. </li>
+<li>In the search bar, type <strong>Youtube Data API v3</strong> and select it from the results page.</li>
+<li>Click <strong>Enable</strong>.</li>
+<li>Click the back button in your browser <strong>twice</strong> and ensure that your page resembles the following with the Youtube Data API enabled:</li>
+</ol>
+<p class="image-container"><img alt="youtube-api.png" style="width: 624.00px" src="img/111500a0349b6062.png"></p>
+<h2 is-upgraded><strong>Get an API Key</strong></h2>
+<p>To make Youtube Data API requests from your Cloud Function, you will need to login with your <a href="https://www.google.com/accounts/NewAccount" target="_blank">Google Account</a> to access the Google API Console, request an API key, and register your application.</p>
+<ol type="1" start="1">
+<li>Return to the <a href="https://console.cloud.google.com" target="_blank"><strong>GCP Console</strong></a></li>
+<li>Open the Navigation menu.</li>
+<li>From there, select <strong>APIs &amp; Services</strong> &gt; <strong>Credentials</strong>. </li>
+<li>Click on the <strong>Create credentials</strong> dropdown</li>
+<li>Select <strong>API Key</strong>. You should see this input as below, with your generated key.<img alt="api-key.png" style="width: 525.50px" src="img/af96b435786e7812.png"></li>
+<li><strong>Copy</strong> the API key and save it somewhere for later use, (e.g a text editor or notepad). </li>
+<li>Click <strong>Close</strong>.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Build the fulfillment webhook endpoint" duration="0">
+        <p>When you set up your webhook, you pass information from a matched intent into a web service and get a result from it.</p>
+<ol type="1" start="1">
+<li>On the left menu click on: Fulfilment</li>
+<li>Toggle on the <em>Inline Editor(Powered by Cloud Functions for Firebase)</em></li>
+<li>Copy the <code>index.js</code>  as seen below.</li>
+</ol>
+<pre><code>&#34;use strict&#34;;
+
+const {
+  dialogflow,
+  actionssdk,
+  Image,
+  Button,
+  BasicCard,
+  Table,
+  Carousel
+} = require(&#39;actions-on-google&#39;);
+
+const functions = require(&#39;firebase-functions&#39;);
+const app = dialogflow({ debug: true });
+
+const API_KEY = &#34;ADD_YOUR_API_KEY&#34;;
+
+app.intent(&#34;search&#34;, (conv, {song, artist}) =&gt; {
+  let query = `${artist} ${song}`;
+  console.log(song);
+  if (!song || song == &#39;undefined&#39;) {
+    query = conv.query;
+  }
+  
+  const url = &#34;https://www.googleapis.com/youtube/v3/search?part=snippet&amp;maxResults=5&amp;q=&#34; + encodeURIComponent(query + &#34; karaoke|lyrics&#34;)+ &#34;&amp;type=video&amp;order=relevance&amp;videoCategoryId=10&amp;key=&#34; + API_KEY;
+
+  console.log(url);
+  const axios = require(&#39;axios&#39;);
+    return axios.get(url)
+        .then(response =&gt; {
+          var output = JSON.stringify(response.data);
+          var song_fields = response.data.items[1];
+          return song_fields;
+      }).then(output =&gt; {
+                      var song_title = output.snippet.title;
+          song_title = song_title.replace(/&amp;amp;/g, &#39;&amp;&#39;);
+          song_title = song_title.replace(/&amp;quot;/g, &#39;\&#34;&#39;);
+          var song_link = JSON.stringify(output.id.videoId);
+          var song_thumbnail = output.snippet.thumbnails.high.url;
+          conv.ask(`Finding your song...`);
+      conv.ask(new BasicCard({
+  title: `${song_title}`,
+  buttons: new Button({
+    title: `Let&#39;s sing`,
+    url: `https://www.youtube.com/watch?v=${song_link.slice(1, -1)}`,
+  }),
+  image: new Image({
+    url: song_thumbnail,
+    alt: &#39;Song thumbnail&#39;
+  }),
+  display: &#39;CROPPED&#39;,
+}));
+      conv.close(`${song_title}. Link: https://www.youtube.com/watch?v=${song_link.slice(1, -1)}. Enjoy! Bye`);
+      });
+});
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
+
+</code></pre>
+<ol type="1" start="1">
+<li>Next, add your YOUTUBE API to the  <code>app.js</code> file:</li>
+</ol>
+<pre><code>const API_KEY = &#34;ADD_YOUR_API_KEY&#34;;</code></pre>
+<ol type="1" start="1">
+<li>Add the code snippet below to your  <code>package.json</code> file:</li>
+</ol>
+<pre>{
+ &#34;name&#34;: &#34;dialogflowFirebaseFulfillment&#34;,
+  &#34;description&#34;: &#34;karaoke.&#34;,
+  &#34;version&#34;: &#34;0.0.1&#34;,
+  &#34;author&#34;: &#34;Amanda Cavallaro&#34;,
+  &#34;engines&#34;: {
+    &#34;node&#34;: &#34;8&#34;
+  },
+  &#34;scripts&#34;: {
+    &#34;start&#34;: &#34;firebase serve --only functions:dialogflowFirebaseFulfillment&#34;,
+    &#34;deploy&#34;: &#34;firebase deploy --only functions:dialogflowFirebaseFulfillment&#34;
+  },
+  &#34;dependencies&#34;: {
+    &#34;actions-on-google&#34;: &#34;^2.2.0&#34;,
+    &#34;firebase-admin&#34;: &#34;^7.0.0&#34;,
+    &#34;firebase-functions&#34;: &#34;^2.2.0&#34;,
+    &#34;dialogflow&#34;: &#34;^0.8.0&#34;,
+    &#34;dialogflow-fulfillment&#34;: &#34;^0.6.1&#34;,
+    &#34;axios&#34;: &#34;0.16.2&#34;
+  }
+}</pre>
+<p>Check your Google Permission Settings</p>
+<p>It&#39;s time to use the Actions simulator to begin testing your agent.</p>
+<p>It is important to check that necessary permissions are enabled.</p>
+<p>Visit the <a href="https://myaccount.google.com/activitycontrols" target="_blank"><paper-button class="colored" raised>Activity Controls page</paper-button></a>. </p>
+<p>Ensure that the following permissions are enabled:</p>
+<ul>
+<li>Web &amp; App Activity</li>
+<li>Device Information</li>
+<li>Voice &amp; Audio Activity</li>
+</ul>
+<p>You can now <strong>close</strong> the Activity Controls page.</p>
+<p>Test the action with the simulator</p>
+<p>To test out your Action in the Actions console simulator:</p>
+<ol type="1" start="1">
+<li>In the <a href="https://console.dialogflow.com/" target="_blank"><paper-button class="colored" raised>Dialogflow Console</paper-button></a> left navigation, click on Integrations. </li>
+<li>Then, click on Google Assistant &gt; Integration Settings.</li>
+<li>Click Test to update your Actions project and load it into the Actions Console simulator. (If you see a ‘Check auto-preview setting&#39; dialog, you can leave the ‘Auto-preview changes&#39; option enabled, then click Continue.)<img title="Figure 3: Dialogflow Console (Testing your Action from Google Assistant Integration Settings.)" style="width: 624.00px" src="img/e96ac29642231a05.png"></li>
+<li>To test your Action in the simulator, type &#34;Talk to my test app&#34; into the Input field and hit enter.</li>
+</ol>
+<p class="image-container"><img title="Figure 4: Launching the codelab Action with an explicit invocation in the simulator." style="width: 624.00px" src="img/51f21d3f54b44d1d.png"></p>
+<p>Notice that when your Action&#39;s welcome intent is invoked, the Assistant responds with the greeting message and prompts the user to provide the music artist and song title.</p>
+<p>Return to the Actions console. Then from the left-hand menu, under the TEST header click <strong>Simulator</strong>. You should now be on the following page:</p>
+<p class="image-container"><img alt="10b7d49ec40d1157.png" style="width: 508.00px" src="img/10b7d49ec40d1157.png"></p>
+<p>Through the Actions simulator you are able test your action using an intuitive interface that lets you simulate hardware devices and their settings</p>
+<p>Reply by type/ saying a music artist and a song such as Eagles - Hotel California. You should receive a similar output in the right-hand panel, which includes the song name, link, and thumbnail:</p>
+<p class="image-container"><img style="width: 315.00px" src="img/dbd26b4bd3b80917.png"></p>
+<p>Try talking with your test app with new music artists and songs!</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Next Steps" duration="0">
+        <p>Congratulations!</p>
+<p>You built a karaoke action with Actions on Google.</p>
+<h3 class="checklist" is-upgraded>What we&#39;ve covered</h3>
+<ul class="checklist">
+<li>How to build a robust Google Assistant application</li>
+<li>How to use the firebase inline-editor and cloud functions</li>
+<li>How to handling Youtube Data API requests</li>
+<li>How to set up an Actions project using the Dialogflow and Actions Consoles.</li>
+<li>How to create a welcome intent so that users can start a conversation with your Action.</li>
+<li>How to create conversational responses using Dialogflow intents and a custom webhook.</li>
+<li>How to test your Action in real-time using the Actions Console simulator.</li>
+<li>How to declare your conversation grammar with Dialogflow intents</li>
+</ul>
+<h3 is-upgraded>What&#39;s next</h3>
+<ul>
+<li><a href="http://actions.google.com/" target="_blank">actions.google.com</a>: The official documentation site for Actions on Google.</li>
+<li><a href="https://github.com/actions-on-google/" target="_blank">Actions on Google GitHub repo</a>: Sample code and libraries.</li>
+<li><a href="https://dialogflow.com/" target="_blank">Dialogflow.com</a>: The official documentation site for Dialogflow.</li>
+<li><a href="https://www.reddit.com/r/GoogleAssistantDev/" target="_blank">r/GoogleAssistantDev</a>: The official Reddit community for developers working with the Google Assistant.</li>
+</ul>
+<h3 is-upgraded>Credits</h3>
+<ul>
+<li>This website was based on the qwiklabs: Google Assistant: Build a Youtube Entertainment App and Build Actions for the Google Assistant codelab 1.</li>
+<li><a href="https://github.com/fivethirtyeight/data/blob/master/classic-rock/classic-rock-song-list.csv" target="_blank">This</a> data set was used for the songs and artists.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

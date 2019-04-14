@@ -1,0 +1,28 @@
+{
+  "environment": "web",
+  "source": "1ODI7d2-pz2bpyTszZajDCeGLFcnhp4KIyN1f1OnOFT0",
+  "format": "md",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2019-04-14T21:35:58Z",
+  "id": "karaoke",
+  "duration": 0,
+  "title": "Google Assistant: Build your own karaoke",
+  "authors": "Amanda Cavallaro",
+  "summary": "In this codelab, you'll build a Karaoke action using Actions on Google, DialogFlow, Cloud Functions and the YouTube API.",
+  "theme": "assistant",
+  "status": [
+    "draft"
+  ],
+  "category": [
+    "Assistant",
+    "GCP"
+  ],
+  "tags": [
+    "aogdevs",
+    "iwd19",
+    "wtm19"
+  ],
+  "feedback": "https://github.com/amdcaruso/karaoke",
+  "url": "karaoke"
+}
