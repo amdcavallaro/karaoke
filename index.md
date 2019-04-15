@@ -268,7 +268,7 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
 
 ```
 
-1. Next, add your YOUTUBE API to the  `app.js` file:
+1. Next, add your YOUTUBE API to the  `index.js` file (same as above):
 
 ```
 const API_KEY = "ADD_YOUR_API_KEY";
