@@ -74,7 +74,7 @@ The welcome intent is the first message your users will get from your agent, usu
 You've just created the welcoming response to the first interaction of the users with your karaoke app.
 
 
-## Songs entity
+## Entity: song
 
 
 
@@ -107,8 +107,9 @@ Entities are powerful tools used for keyword extraction. Let's create the songs 
 7. Click save.
 8. 🌟 You've created the  *song*  entity
 
+To be improved: Anything can be a song title. Anything can be a song title, it doesn't follow any patterns. So it's good to train this entity with a larger data set.
 
-## Artists entity
+## Entity: Artist
 
 
 
@@ -208,23 +209,31 @@ When you set up your webhook, you pass information from a matched intent into a 
 2. Toggle on the  *Inline Editor(Powered by Cloud Functions for Firebase)* 
 3. Copy the `index.js`  as seen below.
 
-```
-"use strict";
+```"use strict";
 
-const {
-  dialogflow,
-  actionssdk,
-  Image,
-  Button,
-  BasicCard,
-  Table,
-  Carousel
-} = require('actions-on-google');
+const { dialogflow, actionssdk, Image, Button, BasicCard, SimpleResponse } = require("actions-on-google");
 
-const functions = require('firebase-functions');
+const functions = require("firebase-functions");
 const app = dialogflow({ debug: true });
 
-const API_KEY = "ADD_YOUR_API_KEY";
+const API_KEY = "AIzaSyBPz-bu4lN3KJtEy2IcBXk8ZtXXhwGLGAo";
+
+const youtubeSongBasicCard = (song_title, song_link, song_thumbnail) => {
+  const basicCard = new BasicCard({
+    text: `${song_title}`,
+    title: `${song_title}`,
+    buttons: new Button({
+      title: `Let's sing`,
+      url: `https://www.youtube.com/watch?v=${song_link.slice(1, -1)}`
+    }),
+    image: new Image({
+      url: song_thumbnail,
+      alt: "Song thumbnail"
+    }),
+    display: "CROPPED"
+  });
+  return basicCard;
+};
 
 app.intent("search", (conv, {song, artist}) => {
   let query = `${artist} ${song}`;
@@ -235,34 +244,29 @@ app.intent("search", (conv, {song, artist}) => {
   
   const url = "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=5&q=" + encodeURIComponent(query + " karaoke|lyrics")+ "&type=video&order=relevance&videoCategoryId=10&key=" + API_KEY;
 
-  console.log(url);
-  const axios = require('axios');
-    return axios.get(url)
-        .then(response => {
-          var output = JSON.stringify(response.data);
-          var song_fields = response.data.items[1];
-          return song_fields;
-      }).then(output => {
-                      var song_title = output.snippet.title;
-          song_title = song_title.replace(/&amp;/g, '&');
-          song_title = song_title.replace(/&quot;/g, '\"');
-          var song_link = JSON.stringify(output.id.videoId);
-          var song_thumbnail = output.snippet.thumbnails.high.url;
-          conv.ask(`Finding your song...`);
-      conv.ask(new BasicCard({
-  title: `${song_title}`,
-  buttons: new Button({
-    title: `Let's sing`,
-    url: `https://www.youtube.com/watch?v=${song_link.slice(1, -1)}`,
-  }),
-  image: new Image({
-    url: song_thumbnail,
-    alt: 'Song thumbnail'
-  }),
-  display: 'CROPPED',
-}));
-      conv.close(`${song_title}. Link: https://www.youtube.com/watch?v=${song_link.slice(1, -1)}. Enjoy! Bye`);
-      });
+  const axios = require("axios");
+  return axios
+    .get(url)
+    .then(response => {
+      var output = JSON.stringify(response.data);
+      var song_fields = response.data.items[1];
+      return song_fields;
+    })
+    .then(output => {
+      var song_title = output.snippet.title;
+      song_title = song_title.replace(/&amp;/g, "&");
+      song_title = song_title.replace(/&quot;/g, '"');
+      var song_link = JSON.stringify(output.id.videoId);
+      var song_thumbnail = output.snippet.thumbnails.high.url;
+      if (conv.screen) {
+        conv.ask(new SimpleResponse({
+          speech: 'Finding your song...',
+          text: 'Finding your song...',
+      	}));
+        conv.ask(youtubeSongBasicCard(song_title, song_link, song_thumbnail));
+      }
+	  conv.close(`${song_title}. Link: https://www.youtube.com/watch?v=${song_link.slice(1, -1)}. Enjoy! Bye`);
+    });
 });
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
 
